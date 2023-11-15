@@ -7,15 +7,49 @@ const fetchMyIP = function (callback) {
   request(url, (error, response, body) => {
     if (error) {
       callback(error, null);
+      return;
     }
-    const data = JSON.parse(body);
 
-    callback(null, data['ip']);
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+
+    const ip = JSON.parse(body).ip;
+    callback(null, ip);
   });
-
 };
 
-module.exports = { fetchMyIP };
+const fetchCoordsByIP = function (ip, callback) {
+  request(`http://ipwho.is/${ip}`, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+
+
+
+    if (JSON.parse(body).success === false) {
+      const message = `Success status was ${JSON.parse(body).success}. Server message says: ${JSON.parse(body).message} when fetching for IP ${JSON.parse(body).ip}`;
+      callback(Error(message), null);
+      return;
+    }
+
+    const latitude = JSON.parse(body).latitude;
+    const longitude = JSON.parse(body).longitude;
+
+    const results = {
+      "latitude": latitude,
+      "longitude": longitude
+    };
+    callback(null, results);
+  });
+};
+
+
+
+module.exports = { fetchMyIP, fetchCoordsByIP };
 
 
 // 'https://api.ipify.org?format=json'
