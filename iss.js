@@ -47,9 +47,27 @@ const fetchCoordsByIP = function (ip, callback) {
   });
 };
 
+const fetchISSFlyOverTime = function (coords, callback) {
+  request(`https://iss-flyover.herokuapp.com/json/?lat=${coords.latitude}&lon=${coords.longitude}`, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+
+    const parsedBody = JSON.parse(body);
+
+    callback(null, parsedBody.response);
+  });
+};
 
 
-module.exports = { fetchMyIP, fetchCoordsByIP };
+
+module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTime };
 
 
-// 'https://api.ipify.org?format=json'
